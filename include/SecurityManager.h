@@ -36,3 +36,5 @@ public:
     bool isSecureEnvironment();
     bool hasAdminPrivileges();
 };
+
+#endif
